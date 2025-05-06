@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Identity Verification</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="face-api.min.js"></script>
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <h1>Face Verification</h1>
+  <video id="video" autoplay muted playsinline width="640" height="480"></video>
+  <canvas id="canvas" style="display: none;"></canvas>
+
+  <div class="controls">
+    <button onclick="startCamera()">Start Camera</button>
+    <button onclick="captureImage()">Capture</button>
+    <button onclick="retake()">Retake</button>
+    <input type="file" id="referenceImage" accept="image/*">
+    <button onclick="verify()">Verify</button>
+  </div>
+
+  <div id="result"></div>
+</body>
+</html>

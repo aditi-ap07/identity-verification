@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">  <!-- Added viewport -->
+  <title>Identity Verification</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <h1>Identity Verification System</h1>
+
+  <video id="webcam" autoplay playsinline></video>
+  <br>
+
+  <label for="uploadInput">Upload Reference Image:</label>
+  <input type="file" id="uploadInput" accept="image/*" title="Upload an image for reference" placeholder="Choose a file">
+  <br>
+
+  <button id="captureBtn">Capture & Verify</button>
+  <br>
+
+  <canvas id="canvas" style="display:none;"></canvas>
+
+  <div id="resultBox">Waiting for face...</div>
+
+  <script type="module">
+    import {
+      FaceDetector,
+      FilesetResolver
+    } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
+  
+    let faceDetector;
+  
+    async function initFaceDetection() {
+      const vision = await FilesetResolver.forVisionTasks(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
+      );
+  
+      faceDetector = await FaceDetector.createFromOptions(vision, {
+        baseOptions: {
+          modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_detector/short_range/float16/1/face_detector.tflite`,
+          delegate: "GPU"
+        },
+        runningMode: "VIDEO"
+      });
+  
+      startCamera();
+    }
+  
+    async function startCamera() {
+      const video = document.getElementById("webcam");
+      const resultBox = document.getElementById("resultBox");
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+  
+      navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+        video.srcObject = stream;
+        video.onloadedmetadata = () => {
+          video.play();
+          detectFaces();
+        };
+      });
+  
+      async function detectFaces() {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+  
+        const detect = async () => {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  
+          const faces = await faceDetector.detectForVideo(video, performance.now());
+          if (faces.detections.length > 0) {
+            resultBox.textContent = "✅ Face Detected";
+            resultBox.style.color = "green";
+          } else {
+            resultBox.textContent = "❌ No Face Detected";
+            resultBox.style.color = "red";
+          }
+  
+          requestAnimationFrame(detect);
+        };
+  
+        detect();
+      }
+    }
+  
+    initFaceDetection();
+  </script>
+  
+ 
+</body>
+</html>
+
+
+
+
+
+
+
+
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 20px;
+  background-color: #f4f4f4;
+}
+
+.video-container {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 20px;
+}
+
+video {
+  border: 2px solid #333;
+  border-radius: 10px;
+  width: 640px;
+  height: 480px;
+}
+
+button {
+  margin-top: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+}
+
+#resultBox {
+  margin-top: 20px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Identity Verification</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <h1>Identity Verification System</h1>
+
+  <video id="webcam" autoplay playsinline></video>
+  <canvas id="canvas" style="display: none;"></canvas>
+  <img id="capturedImage" style="display: none;" />
+
+  <br>
+  <input type="file" id="uploadInput" accept="image/*" />
+  <br><br>
+
+  <button id="captureBtn">Capture</button>
+  <button id="retakeBtn" style="display: none;">Take Again</button>
+  <button id="confirmBtn" style="display: none;">Confirm</button>
+
+  <div id="resultBox">Waiting for face...</div>
+
+
+  <!-- Load MediaPipe core -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"></script>
+
+  <!-- Load Face Detection -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js"></script>
+
+  <script src="script.js"></script>
+</body>
+</html>
